@@ -55,9 +55,6 @@ class CryptoApp(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        # Main tab control
-        self.actionTabs = None
-
         self.configure_gui()
         self.create_widgets()
 
@@ -66,14 +63,34 @@ class CryptoApp(tk.Tk):
         self.geometry("800x600")
 
     def create_widgets(self):
+        menubar = tk.Menu(self, tearoff=False)
+        self.config(menu=menubar)
+
+        menu_keys = tk.Menu(self, tearoff=False)
+
+        menu_keys.add_command(label='Select New Private Key', command=self.select_private)
+        menu_keys.add_command(label='Select New Public Key', command=self.select_public)
+        menu_keys.add_command(label='Generate Keys', command=self.generate_keypair)
+
+        menubar.add_cascade(menu=menu_keys, label='My Keys')
+
         self.create_tabs()
 
+    def select_private(self):
+        print("showing keys")
+
+    def select_public(self):
+        print("editing keys")
+
+    def generate_keypair(self):
+        print("generate keypair")
+
     def create_tabs(self):
-        self.actionTabs = ttk.Notebook(self)
-        self.actionTabs.add(EnvelopeTab(self.actionTabs), text="Digital Envelope")
-        self.actionTabs.add(SignatureTab(self.actionTabs), text="Digital Signature")
-        self.actionTabs.add(StampTab(self.actionTabs), text="Signed Envelope")
-        self.actionTabs.pack(expand=1, fill="both")
+        action_tabs = ttk.Notebook(self)
+        action_tabs.add(EnvelopeTab(action_tabs), text="Digital Envelope")
+        action_tabs.add(SignatureTab(action_tabs), text="Digital Signature")
+        action_tabs.add(StampTab(action_tabs), text="Signed Envelope")
+        action_tabs.pack(expand=1, fill="both")
 
 
 if __name__ == '__main__':
