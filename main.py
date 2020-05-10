@@ -1,6 +1,13 @@
 import tkinter as tk
+import tkinter.simpledialog
+from tkinter.filedialog import asksaveasfile
 from tkinter import ttk
 
+from Crypto.PublicKey import RSA
+
+import crypto_objects as co
+
+import pickle
 
 class EnvelopeTab(tk.Frame):
 
@@ -83,7 +90,54 @@ class CryptoApp(tk.Tk):
         print("editing keys")
 
     def generate_keypair(self):
-        print("generate keypair")
+        """
+        Definitely needs refactoring.
+        Generates RSA keys and dumps them into a file
+
+        :return: None
+        """
+
+        key_size = None
+
+        while key_size is None or key_size < 1024 or key_size % 256 is not 0:
+            key_size = tk.simpledialog.askinteger(
+                "RSA key size",
+                "Size must be greater than 1024 and be a multiple of 256",
+                minvalue=1024)
+
+            if key_size is None:
+                return
+
+        key = RSA.generate(key_size)
+
+        private_key = co.RSAPrivateKey.from_crypto_key(key_size, key)
+        public_key = co.RSAPublicKey.from_crypto_key(key_size, key)
+
+        file = asksaveasfile(
+            mode='wb',
+            title="Save Private Key As",
+            filetypes=[('Private Key (.pri)', '*.pri'), ('All Files', '*.*')],
+            initialfile='private_key.pri',
+            initialdir='./')
+
+        if file is None:
+            return
+
+        pickle.dump(private_key, file)
+        file.close()
+
+        file = asksaveasfile(
+            mode='wb',
+            title="Save Public Key As",
+            filetypes=[('Public Key (.pub)', '*.pub'), ('All Files', '*.*')],
+            initialfile='public_key.pub',
+            initialdir='./')
+
+        if file is None:
+            return
+
+        pickle.dump(public_key, file)
+        file.close()
 
     def create_tabs(self):
         action_tabs = ttk.Notebook(self)
