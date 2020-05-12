@@ -4,8 +4,10 @@ from tkinter.filedialog import asksaveasfile
 from tkinter import ttk
 
 from Crypto.PublicKey import RSA
+from Crypto.Random import get_random_bytes
 
 import crypto_objects as co
+
 
 import pickle
 
@@ -70,26 +72,56 @@ class CryptoApp(tk.Tk):
         self.geometry("800x600")
 
     def create_widgets(self):
-        menubar = tk.Menu(self, tearoff=False)
-        self.config(menu=menubar)
-
+        # Menu cascade entries
         menu_keys = tk.Menu(self, tearoff=False)
+        menu_keys.add_command(label='Generate RSA Keypair', command=self.generate_keypair)
+        menu_keys.add_command(label='Generate Random Key - AES', command=self.generate_aes_key)
 
-        menu_keys.add_command(label='Select New Private Key', command=self.select_private)
-        menu_keys.add_command(label='Select New Public Key', command=self.select_public)
-        menu_keys.add_command(label='Generate Keys', command=self.generate_keypair)
+        # Menubar
+        menubar = tk.Menu(self, tearoff=False)
+        menubar.add_cascade(menu=menu_keys, label='Keys')
 
-        menubar.add_cascade(menu=menu_keys, label='My Keys')
-
+        self.config(menu=menubar)
         self.create_tabs()
 
-    def select_private(self):
-        print("showing keys")
+    @staticmethod
+    def generate_aes_key():
+        """
+        Generates radnom AES key and dumps it into a file.
 
-    def select_public(self):
-        print("editing keys")
+        :return: None
+        """
 
-    def generate_keypair(self):
+        key_size = None
+
+        while key_size is None or key_size not in (128, 192, 256):
+            key_size = tk.simpledialog.askinteger(
+                "RSA key size",
+                "Size must be 128, 192 or 256 (bits)"
+            )
+
+            if key_size is None:
+                return
+
+        key = get_random_bytes(key_size//8)
+
+        file = asksaveasfile(
+            mode='wb',
+            title="Save Random AES Key As",
+            filetypes=[('AES Key (.aes)', '*.aes'), ('All Files', '*.*')],
+            initialfile='key.aes',
+            initialdir='./')
+
+        if file is None:
+            return
+
+        pickle.dump(key, file)
+        file.close()
+
+
+
+    @staticmethod
+    def generate_keypair():
         """
         Definitely needs refactoring.
         Generates RSA keys and dumps them into a file
